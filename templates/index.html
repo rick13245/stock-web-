@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background-color: #4CAF50;
+        }
+
+        .status-disconnected {
+            background-color: #f44336;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            margin: 5px;
+        }
+
+        .button:hover {
+            opacity: 0.8;
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+
+        .input-group button {
+            border-radius: 0 5px 5px 0;
+        }
+
+        .watchlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .signal-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .signal-buy {
+            border-left-color: #4CAF50;
+        }
+
+        .signal-sell {
+            border-left-color: #f44336;
+        }
+
+        .portfolio-summary {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .portfolio-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #f44336;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #4CAF50;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Trading Bot Dashboard</h1>
+            <p>Advanced Stock Market Analysis & Trading</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Status Card -->
+            <div class="card">
+                <h3>🔌 Bot Status</h3>
+                <div id="status-content">
+                    <div class="loading">Loading status...</div>
+                </div>
+                <button class="button" onclick="connectBot()">Connect Bot</button>
+                <button class="button" onclick="refreshStatus()">Refresh</button>
+            </div>
+
+            <!-- Watchlist Card -->
+            <div class="card">
+                <h3>📊 Watchlist</h3>
+                <div class="input-group">
+                    <input type="text" id="symbolInput" placeholder="Enter stock symbol (e.g., RELIANCE)" onkeypress="handleSymbolKeyPress(event)">
+                    <button class="button" onclick="addSymbol()">Add</button>
+                </div>
+                <div id="watchlist-content">
+                    <div class="loading">Loading watchlist...</div>
+                </div>
+            </div>
+
+            <!-- Recent Signals Card -->
+            <div class="card">
+                <h3>📈 Recent Signals</h3>
+                <div id="signals-content">
+                    <div class="loading">Loading signals...</div>
+                </div>
+                <button class="button" onclick="refreshSignals()">Refresh Signals</button>
+            </div>
+
+            <!-- Portfolio Card -->
+            <div class="card">
+                <h3>💼 Portfolio</h3>
+                <div id="portfolio-content">
+                    <div class="loading">Loading portfolio...</div>
+                </div>
+                <button class="button" onclick="refreshPortfolio()">Refresh Portfolio</button>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card">
+                <h3>⚡ Quick Actions</h3>
+                <div class="input-group">
+                    <input type="text" id="analyzeInput" placeholder="Symbol to analyze">
+                    <button class="button" onclick="analyzeSymbol()">Analyze</button>
+                </div>
+                <div id="analysis-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let botConnected = false;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+            refreshWatchlist();
+            refreshSignals();
+            refreshPortfolio();
+        });
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Request failed:', error);
+                return { error: error.message };
+            }
+        }
+
+        async function refreshStatus() {
+            const data = await makeRequest('/api/status');
+            const statusContent = document.getElementById('status-content');
+            
+            if (data.error) {
+                statusContent.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                return;
+            }
+
+            const statusClass = data.logged_in ? 'status-connected' : 'status-disconnected';
+            statusContent.innerHTML = `
+                <div>
+                    <span class="status-indicator ${statusClass}"></span>
+                    Status: ${data.status}
+                </div>
+                <div>Logged in: ${data.logged_in ? 'Yes' : 'No'}</div>
+                <div>Watchlist: ${data.watchlist_count} symbols</div>
+            `;
+            
+            botConnected = data.logged_in;
+        }
+
+        async function connectBot() {
+            const data = await makeRequest('/api/login', { method: 'POST' });
+            
+            if (data.success) {
+                document.getElementById('status-content').innerHTML += 
+                    `<div class="success">${data.message}</div>`;
+                setTimeout(refreshStatus, 1000);
+            } else {
+                document.getElementById('status-content').innerHTML += 
+                    `<div class="error">${data.message}</div>`;
+            }
+        }
+
+        async function refreshWatchlist() {
+            const data = await makeRequest('/api/watchlist');
+            const watchlistContent = document.getElementById('watchlist-content');
+            
+            if (data.error) {
+                watchlistContent.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                return;
+            }
+
+            if (!data.watchlist || data.watchlist.length === 0) {
+                watchlistContent.innerHTML = '<div>No symbols in watchlist</div>';
+                return;
+            }
+
+            watchlistContent.innerHTML = data.watchlist.map(symbol => `
+                <div class="watchlist-item">
+                    <span>${symbol}</span>
+                    <button class="button" onclick="removeSymbol('${symbol}')">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        async function addSymbol() {
+            const symbolInput = document.getElementById('symbolInput');
+            const symbol = symbolInput.value.trim().toUpperCase();
+            
+            if (!symbol) {
+                alert('Please enter a symbol');
+                return;
+            }
+
+            const data = await makeRequest('/api/add_symbol', {
+                method: 'POST',
+                body: JSON.stringify({ symbol })
+            });
+
+            if (data.success) {
+                symbolInput.value = '';
+                refreshWatchlist();
+                refreshStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function removeSymbol(symbol) {
+            const data = await makeRequest('/api/remove_symbol', {
+                method: 'POST',
+                body: JSON.stringify({ symbol })
+            });
+
+            if (data.success) {
+                refreshWatchlist();
+                refreshStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function refreshSignals() {
+            const data = await makeRequest('/api/recent_signals');
+            const signalsContent = document.getElementById('signals-content');
+            
+            if (data.error) {
+                signalsContent.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                return;
+            }
+
+            if (!data.signals || data.signals.length === 0) {
+                signalsContent.innerHTML = '<div>No recent signals</div>';
+                return;
+            }
+
+            signalsContent.innerHTML = data.signals.map(signal => `
+                <div class="signal-item signal-${signal.signal_type?.toLowerCase()}">
+                    <strong>${signal.symbol}</strong> - ${signal.signal_type}
+                    <br><small>${signal.indicator} | ${signal.timestamp || 'N/A'}</small>
+                </div>
+            `).join('');
+        }
+
+        async function refreshPortfolio() {
+            const data = await makeRequest('/api/portfolio');
+            const portfolioContent = document.getElementById('portfolio-content');
+            
+            if (data.error) {
+                portfolioContent.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                return;
+            }
+
+            if (!data.portfolio) {
+                portfolioContent.innerHTML = '<div>No portfolio data available</div>';
+                return;
+            }
+
+            portfolioContent.innerHTML = `
+                <div class="portfolio-summary">
+                    <div class="portfolio-value">₹${data.portfolio.total_value?.toLocaleString() || '0'}</div>
+                    <div>Total P&L: ₹${data.portfolio.total_pnl?.toLocaleString() || '0'}</div>
+                </div>
+            `;
+        }
+
+        async function analyzeSymbol() {
+            const analyzeInput = document.getElementById('analyzeInput');
+            const symbol = analyzeInput.value.trim().toUpperCase();
+            const resultDiv = document.getElementById('analysis-result');
+            
+            if (!symbol) {
+                alert('Please enter a symbol to analyze');
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="loading">Analyzing...</div>';
+
+            const data = await makeRequest('/api/analyze_symbol', {
+                method: 'POST',
+                body: JSON.stringify({ symbol })
+            });
+
+            if (data.success) {
+                resultDiv.innerHTML = `
+                    <div class="success">Analysis complete for ${symbol}</div>
+                    <div>Signals generated: ${data.signals?.length || 0}</div>
+                `;
+                analyzeInput.value = '';
+                refreshSignals();
+            } else {
+                resultDiv.innerHTML = `<div class="error">${data.message}</div>`;
+            }
+        }
+
+        function handleSymbolKeyPress(event) {
+            if (event.key === 'Enter') {
+                addSymbol();
+            }
+        }
+    </script>
+</body>
+</html>
