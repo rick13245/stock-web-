@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angel One Stock Market Signal Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .login-form {
+            display: block;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .user-info h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info p {
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .api-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .api-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .api-buttons {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .btn-api {
+            padding: 0.5rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-api:hover {
+            background: #218838;
+        }
+
+        .response-area {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>📈 Angel One Signal Bot</h1>
+            <p>Advanced Stock Market Analysis & Trading Signals</p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="login-form">
+            <div id="alertContainer"></div>
+            
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="apiKey">API Key</label>
+                    <input type="text" id="apiKey" required placeholder="Enter your Angel One API Key">
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientId">Client ID</label>
+                    <input type="text" id="clientId" required placeholder="Enter your Client ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter your Password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="totpSecret">TOTP Secret</label>
+                    <input type="text" id="totpSecret" required placeholder="Enter your TOTP Secret Key">
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    <span id="loginBtnText">Login to Angel One</span>
+                    <span id="loginSpinner" class="loading hidden"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <div id="userInfo" class="user-info">
+                <h3>Welcome!</h3>
+                <p id="userDetails"></p>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="getProfile()">Get Profile</button>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- API Testing Section -->
+            <div class="api-section">
+                <h3>API Testing</h3>
+                <div class="api-buttons">
+                    <button class="btn-api" onclick="getMarketStatus()">Market Status</button>
+                    <button class="btn-api" onclick="getPopularStocks()">Popular Stocks</button>
+                    <button class="btn-api" onclick="getLivePrice()">Get Live Price (RELIANCE)</button>
+                    <button class="btn-api" onclick="getStrongSignals()">Strong Signals</button>
+                    <button class="btn-api" onclick="addToWatchlist()">Add to Watchlist</button>
+                </div>
+                <div id="responseArea" class="response-area hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let authToken = null;
+
+        // Show alert message
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Set loading state
+        function setLoading(isLoading) {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            
+            loginBtn.disabled = isLoading;
+            loginBtnText.style.display = isLoading ? 'none' : 'inline';
+            loginSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        // Login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            setLoading(true);
+            
+            const formData = {
+                api_key: document.getElementById('apiKey').value,
+                client_id: document.getElementById('clientId').value,
+                password: document.getElementById('password').value,
+                totp_secret: document.getElementById('totpSecret').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.status) {
+                    authToken = data.access_token;
+                    showAlert('Login successful!', 'success');
+                    
+                    // Update user info
+                    document.getElementById('userDetails').innerHTML = `
+                        User ID: ${data.data.user_id}<br>
+                        Name: ${data.data.client_name || 'N/A'}<br>
+                        Email: ${data.data.email || 'N/A'}
+                    `;
+                    
+                    // Switch to dashboard
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                } else {
+                    showAlert(data.detail || data.message || 'Login failed');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // API helper function
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const config = {
+                method,
+                headers
+            };
+
+            if (body) {
+                config.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                const data = await response.json();
+                
+                // Display response
+                const responseArea = document.getElementById('responseArea');
+                responseArea.classList.remove('hidden');
+                responseArea.innerHTML = `<strong>${method} ${endpoint}</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                return data;
+            } catch (error) {
+                showAlert('API Error: ' + error.message);
+                return null;
+            }
+        }
+
+        // API functions
+        async function getProfile() {
+            await apiCall('/auth/profile');
+        }
+
+        async function getMarketStatus() {
+            await apiCall('/config/market-status');
+        }
+
+        async function getPopularStocks() {
+            await apiCall('/config/popular-stocks');
+        }
+
+        async function getLivePrice() {
+            await apiCall('/market/live-price', 'POST', {
+                symbol: 'RELIANCE',
+                exchange: 'NSE'
+            });
+        }
+
+        async function getStrongSignals() {
+            await apiCall('/signals/strong');
+        }
+
+        async function addToWatchlist() {
+            await apiCall('/watchlist/add', 'POST', {
+                symbols: ['RELIANCE', 'TCS', 'INFY']
+            });
+        }
+
+        async function logout() {
+            if (authToken) {
+                await apiCall('/auth/logout', 'POST');
+                authToken = null;
+            }
+            
+            // Switch back to login
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('responseArea').classList.add('hidden');
+            
+            // Clear form
+            document.getElementById('loginFormElement').reset();
+            
+            showAlert('Logged out successfully', 'success');
+        }
+
+        // Check if we're already logged in (for development)
+        window.addEventListener('load', () => {
+            console.log('Angel One Stock Market Signal Bot loaded');
+            console.log('API Documentation: http://localhost:8000/docs');
+        });
+    </script>
+</body>
+</html>
